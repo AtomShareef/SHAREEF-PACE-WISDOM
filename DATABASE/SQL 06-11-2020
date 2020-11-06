@@ -1,0 +1,161 @@
+                               <<<<<( ON DELETE )>>>>>
+
+-> ON DELETE SET NULL
+-> ON DELETE CASCADE
+
+                           <<<<<( ON DELETE SET NULL )>>>>>
+
+EX:-
+CREATE TABLE branch (
+  branch_id INT PRIMARY KEY,
+  branch_name VARCHAR(40),
+  mgr_id INT,
+  mgr_start_date DATE,
+  FOREIGN KEY(mgr_id) REFERENCES employee(emp_id) ON DELETE SET NULL <---
+);
+
+DELETE from employee
+where emp_id = 102;
+
+select * from branch;
++-----------+-------------+--------+----------------+
+| branch_id | branch_name | mgr_id | mgr_start_date |
++-----------+-------------+--------+----------------+
+|         1 | Corporate   |    100 | 2006-02-09     |
+|         2 | Scranton    |   NULL | 1992-04-06     |<--- 102 set to NULL on DELETE at mgr_id
+|         3 | Stamford    |    106 | 1998-02-13     |
+|         4 | buffalo     |   NULL | NULL           |
++-----------+-------------+--------+----------------+
+
+select * from employee;
++--------+------------+-----------+------------+------+--------+----------+-----------+
+| emp_id | first_name | last_name | birth_day  | sex  | salary | super_id | branch_id |
++--------+------------+-----------+------------+------+--------+----------+-----------+
+|    100 | David      | Wallace   | 1967-11-17 | M    | 250000 |     NULL |         1 |
+|    101 | Jan        | Levinson  | 1961-05-11 | F    | 110000 |      100 |         1 |
+|    103 | Angela     | Martin    | 1971-06-25 | F    |  63000 |     NULL |         2 |<--- 102 set to NULL at super_id
+|    104 | Kelly      | Kapoor    | 1980-02-05 | F    |  55000 |     NULL |         2 |<--- 102 set to NULL -----------
+|    105 | Stanley    | Hudson    | 1958-02-19 | M    |  69000 |     NULL |         2 |<--- 102 set to NULL -----------
+|    106 | Josh       | Porter    | 1969-09-05 | M    |  78000 |      100 |         3 |
+|    107 | Andy       | Bernard   | 1973-07-22 | M    |  65000 |      106 |         3 |
+|    108 | Jim        | Halpert   | 1978-10-01 | M    |  71000 |      106 |         3 |
++--------+------------+-----------+------------+------+--------+----------+-----------+
+_____________________________________________________________________________________
+
+
+                           <<<<<( ON DELETE CASCADE )>>>>>
+
+EX:-
+CREATE TABLE branch_supplier (
+  branch_id INT,
+  supplier_name VARCHAR(40),
+  supply_type VARCHAR(40),
+  PRIMARY KEY(branch_id, supplier_name),
+  FOREIGN KEY(branch_id) REFERENCES branch(branch_id) ON DELETE CASCADE
+);
+
+DELETE from branch
+where branch_id = 2;
+
+select * from branch_supplier;
++-----------+-----------------+------------------+
+| branch_id | supplier_name   | supply_type      |
++-----------+-----------------+------------------+
+|         3 | Hammer Mill     | Paper            |
+|         3 | Patriot Paper   | Paper            |
+|         3 | Stamford Lables | Custom Forms     |
+|         3 | Uni-ball        | Writing Utensils |
++-----------+-----------------+------------------+
+-- All the data with branch_id = 2 got deleted
+_____________________________________________________________________________________
+=====================================================================================
+
+
+                                 <<<<<( TRIGGER )>>>>>
+
+create table trigger_test(
+      message VARCHAR(100)
+);
+
+DELIMITER $$
+
+create
+      TRIGGER my_trigger BEFORE INSERT
+      ON employee
+      FOR EACH ROW BEGIN
+            insert into trigger_test values('Added new employee');
+      END $$
+
+DELIMITER ;
+
+Insert into employee values(109,'Oscar','Martinez','1968-02-19','M',69000,106,3);
+
+select * from trigger_test;
++--------------------+
+| message            |
++--------------------+
+| Added new employee |<--- This message gets printed
++--------------------+
+_____________________________________________________________________________________
+
+DELIMITER $$
+
+create
+      TRIGGER my_trigger1 BEFORE INSERT
+      ON employee
+      FOR EACH ROW BEGIN
+            insert into trigger_test values(New.first_name);
+      END $$
+
+DELIMITER ;
+
+Insert into employee values(110,'Kevin','Malone','1982-03-05','M',45000,106,3);
+
+select * from trigger_test;
++--------------------+
+| message            |
++--------------------+
+| Added new employee |
+| Added new employee |
+| Kevin              |<--- first_name gets printed
++--------------------+
+_____________________________________________________________________________________
+
+DELIMITER $$
+
+create
+      TRIGGER my_trigger2 BEFORE INSERT
+      ON employee
+      FOR EACH ROW BEGIN
+            IF New.sex = 'M' THEN
+                   insert into trigger_test values('Added Male Employee');
+            ELSEIF New.sex = 'F' THEN
+                   insert into trigger_test values('Added Female Employee');
+            ELSE
+                   insert into trigger_test values('Added Other Employee');
+            END IF;
+      END $$
+
+DELIMITER ;
+
+Insert into employee
+values(111,'Pam','Beesly','1979-05-17','F',78000,106,3);
+
+select * from trigger_test;
++-----------------------+
+| message               |
++-----------------------+
+| Added new employee    |
+| Added new employee    |
+| Kevin                 |
+| Added new employee    |
+| Pam                   |
+| Added Female Employee |<---
++-----------------------+
+_____________________________________________________________________________________
+
+DROP TRIGGER my_trigger;
+_____________________________________________________________________________________
+=====================================================================================
+
+
