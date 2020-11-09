@@ -1,0 +1,190 @@
+                                 <<<<<( EXTRA SQL TOPICS )>>>>>
+---------------------------------------------------------------------------------------------------
+                                 <<<<<( COMMANDS )>>>>>
+SELECT
+UPDATE
+DELETE
+INSERT INTO
+CREATE DATABASE
+ALTER DATABASE
+CREATE TABLE
+ALTER TABLE
+DROP TABLE
+CREATE INDEX
+DROP INDEX
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( NULL )>>>>>
+IS NULL
+IS NOT NULL
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( MIN() & MAX() FUNCTIONS )>>>>>
+-> MIN()
+
+ex:
+select MIN(price) as smallest_price
+from  products;
+
+->
+ex:
+select MAX(price) as largest_price
+from  products;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( WILDCARDS )>>>>>
+[char_list]
+[!char_list]
+
+ex: 
+--starting with b, s or p
+select * from cutomers
+where city LIKE '[bsp]%';
+
+--starting with a, b or c
+select * from customers
+where city LIKE '[a-c]%';
+
+--Not starting with b, s or p
+select * from cutomers
+where city LIKE '[!bsp]%';
+--or
+select * from cutomers
+where city NOT LIKE '[bsp]%';
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( BETWEEN )>>>>>
+--selects values within the given range. begin and end values should be there
+ex:
+select * from products
+where price BETWEEN 10 and 20;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( NOT BETWEEN )>>>>>
+ex: --for date
+BETWEEN #DD/MM/YYYY# AND #DD/MM/YYYY#
+--or
+BETWEEN 'YYYY-MM-DD' AND 'YYYY-MM-DD'
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( CONCAT()>>>>>
+--Concats strings with attribute values.
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( HAVING clause)>>>>>
+-- Since we can't use 'WHERE' clause in aggregate functions, we are using 'HAVING' clause.
+ex:
+select COUNT(customer_id), country
+from customers
+GROUP BY country
+HAVING COUNT(customer_id) > 5;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( EXISTS OPERATOR )>>>>>
+--It is used to test for the existence of any record in sub-querey
+ex:
+select supplier_name
+from suppliers
+where EXISTS( select product_name
+              from products
+              where products.supplier_id = suppliers.supplier_id AND price < 20);
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( ANY & ALL OPERATORS )>>>>>
+--These are used with 'WHERE' and 'HAVING' clauses.
+
+ANY:
+-- returns 'true' if any of sub-query values meet the condition.
+ex:
+select product_name
+from products
+where product_id = ANY(select product_id
+                       from order_details
+                       where quantity = 10);
+                     
+ALL:
+-- returns 'true' if all of the sub-query values meet the condition.
+ex:
+select product_name
+from products
+where product_id = ALL(select product_id
+                       from order_details
+                       where quantity = 10);
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( SELECT INTO )>>>>>
+--Copies data from one table to new table
+ex:
+select * INTO customer_backup
+from customers;
+
+--Copy to different database.
+select * INTO customer_backup
+IN 'Backup.mdb'
+from customers;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( INSERT INTO SELECT )>>>>>
+--Copies all columns from one table to another table.
+ex:
+INSERT INTO customers(customer_name, city, country)
+SELECT supplier_name, city, country
+from suppliers;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( CASE statement )>>>>>
+--Case statement goes through conditions and returns a value when the first condition is met.
+--Once the condition is true, it will stop reading & returns the result.
+--If there is no ELSE part & no conditions are true then it returns NULL.
+ex:
+select order_id, quantity
+CASE
+    WHEN quantity > 30
+        THEN 'quantity is greater than 30'
+    WHEN quantity = 30
+        THEN 'quantity is 30'
+    ELSE 'quantity is under 30'
+END AS Quantity_text
+from order_details;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( NULL functions )>>>>>
+IFNULL():
+COALESCE():
+--Lets you to return an alternative value if an expression is NULL
+ex:
+Select product_name, unit_price * (units_in_stock + IFNULL(units_on_order, 0))
+from products;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( STORED PROCEDURES )>>>>>
+--It is a prepared SQL code that you can store so the code can be reused over and over again.
+ex:
+CREATE PROCEDURE select_all_customers
+AS
+select * from customers
+GO;
+
+EXEC select_all_customers;
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( COMMENT )>>>>>
+'--' single line comment
+'/* */' multi-line comment
+---------------------------------------------------------------------------------------------------
+
+                                 <<<<<( OPERATORS )>>>>>
+ARITHMETIC: + - * / %
+
+BITWISE: & | ^
+
+COMPARISION: = > < >= <= <>
+
+COMPOUND: += -= *= /= %= &= ^-= |*=
+
+LOGICAL: ALL AND ANY BETWEEN EXISTS IN LIKE NOT OR SOME
+---------------------------------------------------------------------------------------------------
+===================================================================================================
+
+
+
